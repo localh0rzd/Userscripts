@@ -28,22 +28,18 @@ function filter(site) {
 //    return;
 //}
 //var res = response.responseText.replace(/<\/?[^>]+(>|$)/g, "");
-var res = 
-response.responseText.replace(/\<(script.*?|style.*?)\>[\s\S]*?\<\/script|style\>|\<[\s\S]*?\>|&.*?;/gmi, 
-"");
+var res = response.responseText.replace(/\<(script.*?|style.*?)\>[\s\S]*?\<\/script|style\>|\<[\s\S]*?\>|&.*?;/gmi, "");
 
 if (site === "immowelt") {
     var elem = a.parentNode;
     if(res.indexOf("frei ab") !== -1){
-        addExtraText(elem, ''.concat(res.substring(res.indexOf("frei ab"), res.indexOf("frei 
-ab") + 30)), 'free');
+        addExtraText(elem, ''.concat(res.substring(res.indexOf("frei ab"), res.indexOf("frei ab") + 30)), 'free');
     }
 
 } else if (site === "immoscout") {
     var elem = a.parentNode.parentNode.parentNode.parentNode;
     if(res.indexOf("Bezugsfrei ab") !== -1){
-        addExtraText(elem, ''.concat(res.substring(res.indexOf("Bezugsfrei ab"), 
-res.indexOf("Bezugsfrei ab") + 30)), 'free');
+        addExtraText(elem, ''.concat(res.substring(res.indexOf("Bezugsfrei ab"), res.indexOf("Bezugsfrei ab") + 30)), 'free');
     }
 } else if (site === "immonet") {
     var elem = a.parentNode.parentNode.parentNode;
@@ -52,12 +48,8 @@ var re = /(WBS|Wohnberechtigungsschein|Deutsche Wohnen|Gewobag|GEWOBAG)/g;
 
 response.responseText.replace(re, function(match, g1, g2) {
     setOpacity(elem);
-//addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match) + 
-30)), 'wbs');
-addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, 
-res.indexOf(match))).concat('<span style="color: 
-red;">').concat(res.substring(res.indexOf(match), res.indexOf(match) + 
-30)).concat('</span>'), 'wbs');
+//addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match) + 30)), 'wbs');
+addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match))).concat('<span style="color: red;">').concat(res.substring(res.indexOf(match), res.indexOf(match) + 30)).concat('</span>'), 'wbs');
 }
 );
 /*
