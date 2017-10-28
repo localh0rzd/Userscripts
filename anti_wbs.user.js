@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name        Anti WBS
-// @namespace   aaaaaaa
+// @namespace   https://github.com/localh0rzd/Userscripts/
+// @description Filtert WBS und schlechte Anbieter heraus
 // @include     http*://*immowelt.de/liste/*
 // @include     http*://*immobilienscout24.de/Suche/*
 // @include     http*://*immonet.de/immobiliensuche/*
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/anti_wbs.user.js
-// @version     1
+// @version     1.1
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 function filter(site) {
@@ -28,7 +29,7 @@ function filter(site) {
 //    return;
 //}
 //var res = response.responseText.replace(/<\/?[^>]+(>|$)/g, "");
-var res = response.responseText.replace(/\<(script.*?|style.*?)\>[\s\S]*?\<\/script|style\>|\<[\s\S]*?\>|&.*?;/gmi, "");
+var res = response.responseText.replace(/<(script.*?|style.*?)>[\s\S]*?<\/script|style>|<[\s\S]*?>|&.*?;/gmi, "");
 
 if (site === "immowelt") {
     var elem = a.parentNode;
@@ -44,9 +45,9 @@ if (site === "immowelt") {
 } else if (site === "immonet") {
     var elem = a.parentNode.parentNode.parentNode;
 }
-var re = /(WBS|Wohnberechtigungsschein|Deutsche Wohnen|Gewobag|GEWOBAG)/g;
+var re = /(WBS|Wohnberechtigungsschein|Deutsche Wohnen|Gewobag)/gi;
 
-response.responseText.replace(re, function(match, g1, g2) {
+res.replace(re, function(match, g1, g2) {
     setOpacity(elem);
 //addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match) + 30)), 'wbs');
 addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match))).concat('<span style="color: red;">').concat(res.substring(res.indexOf(match), res.indexOf(match) + 30)).concat('</span>'), 'wbs');
@@ -110,7 +111,7 @@ function addExtraText(elem, text, kind){
     elem.altered.push(kind);
     var subtext = document.createElement("h5");
     subtext.innerHTML = text;
-    elem.parentNode.appendChild(subtext);   
+    elem.parentNode.appendChild(subtext);
 }
 document.addEventListener("click", work);
 window.addEventListener("popstate", work);
