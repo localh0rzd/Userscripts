@@ -6,7 +6,7 @@
 // @include     http*://*immobilienscout24.de/Suche/*
 // @include     http*://*immonet.de/immobiliensuche/*
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/anti_wbs.user.js
-// @version     1.1
+// @version     1.2
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 function filter(site) {
@@ -29,7 +29,7 @@ function filter(site) {
 //    return;
 //}
 //var res = response.responseText.replace(/<\/?[^>]+(>|$)/g, "");
-var res = response.responseText.replace(/<(script.*?|style.*?)>[\s\S]*?<\/script|style>|<[\s\S]*?>|&.*?;/gmi, "");
+var res = response.responseText.replace(/<(script.*?|style.*?)>[\s\S]*?<\/(script|style)>|<[\s\S]*?>|&.*?;/gmi, "");
 
 if (site === "immowelt") {
     var elem = a.parentNode;
@@ -50,7 +50,7 @@ var re = /(WBS|Wohnberechtigungsschein|Deutsche Wohnen|Gewobag)/gi;
 res.replace(re, function(match, g1, g2) {
     setOpacity(elem);
 //addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match) + 30)), 'wbs');
-addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match))).concat('<span style="color: red;">').concat(res.substring(res.indexOf(match), res.indexOf(match) + 30)).concat('</span>'), 'wbs');
+addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match))).concat('<span style="color: red;">').concat(res.substring(res.indexOf(match), res.indexOf(match) + match.length)).concat('</span>').concat(res.substring(res.indexOf(match) + match.length, res.indexOf(match) + 30)), 'wbs');
 }
 );
 /*
