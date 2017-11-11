@@ -6,9 +6,47 @@
 // @include     http*://*immobilienscout24.de/Suche/*
 // @include     http*://*immonet.de/immobiliensuche/*
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/anti_wbs.user.js
-// @version     1.2
+// @version     1.3
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
+
+var badDistricts = ["Adlershof",
+"Altglienicke",
+"Buch",
+"Buckow",
+"Friedrigshagen",
+"Gropiusstadt",
+"Hellersdorf",
+"Hohenschönhausen",
+"Johannisthal",
+"Karlshorst",
+"Karow",
+"Köpenick",
+"Lichtenberg",
+"Lichtenrade",
+"Mariendorf",
+"Marienfelde",
+"Marzahn",
+"Pankow",
+"Reinickendorf",
+"Rudow",
+"Spandau",
+"Tegel",
+"Wilhelmsruh"];
+var averageDistricts = ["Friedrichshain",
+"Mitte",
+"Neukölln",
+"Steglitz",
+"Zehlendorf"];
+var goodDistricts = ["Charlottenburg",
+"Kreuzberg",
+"Mitte",
+"Moabit",
+"Schöneberg",
+"Tempelhof",
+"Tiergarten",
+"Wedding",
+"Wilmersdorf"];
 function filter(site) {
     var query;
     if (site === "immoscout") {
@@ -19,12 +57,29 @@ function filter(site) {
         query = ".box-40 a[id^='lnkImgToDetails']";
     }
     for (let a of document.querySelectorAll(query)) {
-
-        if (!(site === "immowelt" && !a.href.match(/\/expose\//gi))) {
-            GM_xmlhttpRequest({
-                method: 'GET',
-                url: a.href,
-                onload: function(response) {
+//console.log(a);
+//console.log(a.parentNode);
+var addressLine = a.parentNode.querySelector('div.result-list-entry__address > a').innerHTML;
+var goodDistrictRegex = new RegExp(goodDistricts.join("|"), 'gi');
+var averageDistrictRegex = new RegExp(averageDistricts.join("|"), 'gi');
+var badDistrictRegex = new RegExp(badDistricts.join("|"), 'gi');
+if (goodDistrictRegex.test(addressLine) && site === "immoscout") {
+    var elem = a.parentNode.parentNode.parentNode.parentNode;
+    elem.style.backgroundColor = 'rgba(0,255,0,0.4)';
+}
+if (averageDistrictRegex.test(addressLine) && site === "immoscout") {
+    var elem = a.parentNode.parentNode.parentNode.parentNode;
+    elem.style.backgroundColor = 'rgba(255,165,0,0.4)';
+}
+if (badDistrictRegex.test(addressLine) && site === "immoscout") {
+    var elem = a.parentNode.parentNode.parentNode.parentNode;
+    elem.style.backgroundColor = 'rgba(255,0,0,0.4)';
+}
+if (!(site === "immowelt" && !a.href.match(/\/expose\//gi))) {
+    GM_xmlhttpRequest({
+        method: 'GET',
+        url: a.href,
+        onload: function(response) {
 //if (response.responseText.match(/ohne WBS/g)) {
 //    return;
 //}
@@ -71,8 +126,8 @@ addExtraText(elem);
 },
 onerror: function(res) {}
 });
-        }
-    }
+}
+}
 }
 
 function work() {
