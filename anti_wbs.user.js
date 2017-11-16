@@ -6,7 +6,7 @@
 // @include     http*://*immobilienscout24.de/Suche/*
 // @include     http*://*immonet.de/immobiliensuche/*
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/anti_wbs.user.js
-// @version     1.3
+// @version     1.4
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -17,7 +17,7 @@ var badDistricts = ["Adlershof",
 "Friedrigshagen",
 "Gropiusstadt",
 "Hellersdorf",
-"Hohenschönhausen",
+"schönhausen",
 "Johannisthal",
 "Karlshorst",
 "Karow",
@@ -30,13 +30,16 @@ var badDistricts = ["Adlershof",
 "Pankow",
 "Reinickendorf",
 "Rudow",
-"Spandau",
+"^(?!Spandauer).*Spandau",
 "Tegel",
+"Treptow",
 "Wilhelmsruh"];
 var averageDistricts = ["Friedrichshain",
 "Mitte",
 "Neukölln",
+"Prenzlauer Berg",
 "Steglitz",
+"Weißensee",
 "Zehlendorf"];
 var goodDistricts = ["Charlottenburg",
 "Kreuzberg",
@@ -75,6 +78,7 @@ if (badDistrictRegex.test(addressLine) && site === "immoscout") {
     var elem = a.parentNode.parentNode.parentNode.parentNode;
     elem.style.backgroundColor = 'rgba(255,0,0,0.4)';
 }
+
 if (!(site === "immowelt" && !a.href.match(/\/expose\//gi))) {
     GM_xmlhttpRequest({
         method: 'GET',
