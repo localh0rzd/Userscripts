@@ -6,50 +6,50 @@
 // @include     http*://*immobilienscout24.de/Suche/*
 // @include     http*://*immonet.de/immobiliensuche/*
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/anti_wbs.user.js
-// @version     1.4
+// @version     1.5
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
 var badDistricts = ["Adlershof",
-                    "Altglienicke",
-                    "Buch",
-                    "Buckow",
-                    "Friedrigshagen",
-                    "Gropiusstadt",
-                    "Hellersdorf",
-                    "schönhausen",
-                    "Johannisthal",
-                    "Karlshorst",
-                    "Karow",
-                    "Köpenick",
-                    "Lichtenberg",
-                    "Lichtenrade",
-                    "Mariendorf",
-                    "Marienfelde",
-                    "Marzahn",
-                    "Pankow",
-                    "Reinickendorf",
-                    "Rudow",
-                    "^(?!Spandauer).*Spandau",
-                    "Tegel",
-                    "Treptow",
-                    "Wilhelmsruh"];
+"Altglienicke",
+"Buch",
+"Buckow",
+"Friedrigshagen",
+"Gropiusstadt",
+"Hellersdorf",
+"schönhausen",
+"Johannisthal",
+"Karlshorst",
+"Karow",
+"Köpenick",
+"Lichtenberg",
+"Lichtenrade",
+"Mariendorf",
+"Marienfelde",
+"Marzahn",
+"Pankow",
+"Reinickendorf",
+"Rudow",
+"^(?!Spandauer).*Spandau",
+"Tegel",
+"Treptow",
+"Wilhelmsruh"];
 var averageDistricts = ["Friedrichshain",
-                        "Mitte",
-                        "Neukölln",
-                        "Prenzlauer Berg",
-                        "Steglitz",
-                        "Weißensee",
-                        "Zehlendorf"];
+"Mitte",
+"Neukölln",
+"Prenzlauer Berg",
+"Steglitz",
+"Weißensee",
+"Zehlendorf"];
 var goodDistricts = ["Charlottenburg",
-                     "Kreuzberg",
-                     "Mitte",
-                     "Moabit",
-                     "Schöneberg",
-                     "Tempelhof",
-                     "Tiergarten",
-                     "Wedding",
-                     "Wilmersdorf"];
+"Kreuzberg",
+"Mitte",
+"Moabit",
+"Schöneberg",
+"Tempelhof",
+"Tiergarten",
+"Wedding",
+"Wilmersdorf"];
 function filter(site) {
 
     var query;
@@ -62,9 +62,29 @@ function filter(site) {
     }
     for (let a of document.querySelectorAll(query)) {
         try{
-        //console.log(a);
-        //console.log(a.parentNode);
         var addressLine = a.parentNode.querySelector('div.result-list-entry__address > a').innerHTML;
+        var rent = a.parentNode.querySelector("div > div.result-list-entry__criteria.margin-bottom-s > div > div.grid.grid-flex.gutter-horizontal-l.gutter-vertical-s > dl:nth-child(1) > dd").innerHTML;
+        var room = a.parentNode.querySelector("div > div.result-list-entry__criteria.margin-bottom-s > div > div.grid.grid-flex.gutter-horizontal-l.gutter-vertical-s > dl:nth-child(2) > dd").innerHTML;
+        
+        var rent = Number(rent.replace(/[^0-9,]+/g, "").replace(/,/, "."));
+        var room = Number(room.replace(/[^0-9,]+/g, "").replace(/,/, "."));
+        var cost = (rent / room).toFixed(2);
+        console.info(cost);
+
+        var gutter = a.parentNode.querySelector('.result-list-entry__brand-title-container').parentNode.querySelector("div > div.result-list-entry__criteria.margin-bottom-s > div > div.grid.grid-flex.gutter-horizontal-l.gutter-vertical-s");
+        if(!gutter.querySelector('.kurwa')){
+        var tempchild = document.createElement("dl");
+        //tempchild.innerHTML = '<dl class="grid-item result-list-entry__primary-criterion " role="presentation"><dd class="font-nowrap font-line-xs">536,54 €</dd><dt class="font-s onlyLarge">Kaltmiete</dt></dl>'
+        tempchild.classList.add("grid-item", "result-list-entry__primary-criterion", "kurwa");
+        tempchild.innerHTML = `<dd class="font-nowrap font-line-xs">${cost.toString().replace(/\./, ",")}</dd><dt class="font-s onlyLarge">€ / m²</dt>`;
+        gutter.appendChild(tempchild);
+
+        }
+        
+        var elem = a.parentNode.parentNode.parentNode.parentNode;
+        //addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match))).concat('<span style="color: red;">').concat(res.substring(res.indexOf(match), res.indexOf(match) + match.length)).concat('</span>').concat(res.substring(res.indexOf(match) + match.length, res.indexOf(match) + 30)), 'wbs');
+
+
         var goodDistrictRegex = new RegExp(goodDistricts.join("|"), 'gi');
         var averageDistrictRegex = new RegExp(averageDistricts.join("|"), 'gi');
         var badDistrictRegex = new RegExp(badDistricts.join("|"), 'gi');
@@ -86,10 +106,6 @@ function filter(site) {
                 method: 'GET',
                 url: a.href,
                 onload: function(response) {
-                    //if (response.responseText.match(/ohne WBS/g)) {
-                    //    return;
-                    //}
-                    //var res = response.responseText.replace(/<\/?[^>]+(>|$)/g, "");
                     var res = response.responseText.replace(/<(script.*?|style.*?)>[\s\S]*?<\/(script|style)>|<[\s\S]*?>|&.*?;/gmi, "");
 
                     if (site === "immowelt") {
@@ -110,31 +126,15 @@ function filter(site) {
 
                     res.replace(re, function(match, g1, g2) {
                         setOpacity(elem);
-                        //addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match) + 30)), 'wbs');
                         addExtraText(elem, ''.concat(res.substring(res.indexOf(match) - 30, res.indexOf(match))).concat('<span style="color: red;">').concat(res.substring(res.indexOf(match), res.indexOf(match) + match.length)).concat('</span>').concat(res.substring(res.indexOf(match) + match.length, res.indexOf(match) + 30)), 'wbs');
                     }
-                               );
-                    /*
-if (response.responseText.match()) {
-if (site === "immowelt") {
-var elem = a.parentNode;
-
-} else if (site === "immoscout") {
-var elem = a.parentNode.parentNode.parentNode.parentNode.parentNode;
-} else if (site === "immonet") {
-var elem = a.parentNode.parentNode.parentNode;
-}
-setOpacity(elem);
-addExtraText(elem);
-//elem.style.display = 'none';
-
-}*/
-                },
-                onerror: function(res) {}
-            });
+                    );
+},
+onerror: function(res) {}
+});
         }
-        }catch(err){console.warn(err);}
-    }
+    }catch(err){console.warn(err);}
+}
 }
 
 function work() {
