@@ -6,7 +6,7 @@
 // @include     http*://*immobilienscout24.de/Suche/*
 // @include     http*://*immonet.de/immobiliensuche/*
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/anti_wbs.user.js
-// @version     1.6
+// @version     1.7
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -63,7 +63,7 @@ function filter(site) {
     }
     for (let a of document.querySelectorAll(query)) {
         try {
-            let addressLine = a.parentNode.querySelector('div.result-list-entry__address > a').innerHTML;
+            let addressLine = a.parentNode.querySelector('div.result-list-entry__address > button > div').innerHTML;
             let rent = a.parentNode.querySelector("div > div.result-list-entry__criteria.margin-bottom-s > div > div.grid.grid-flex.gutter-horizontal-l.gutter-vertical-s > dl:nth-child(1) > dd").innerHTML;
             let room = a.parentNode.querySelector("div > div.result-list-entry__criteria.margin-bottom-s > div > div.grid.grid-flex.gutter-horizontal-l.gutter-vertical-s > dl:nth-child(2) > dd").innerHTML;
 
@@ -114,7 +114,7 @@ function filter(site) {
                                 addExtraText(elem, ''.concat(res.substring(res.indexOf("Bezugsfrei ab"), res.indexOf("Bezugsfrei ab") + 30)), 'free');
                             }
                             let matches;
-                            if(matches = res.match(/(Gesamt|Warm)miete\s+((\d+[.,]?\d+) € ?(\(.*\))?)/i)){
+                            if(matches = res.match(/(Gesamt|Warm)miete\s+((\d+[.,]?\d+) € (\(.*?\))?)/i)){
                                 addExtraGutter(a, matches[2], "Gesamtmiete", "overall_rent")
 
                             }
