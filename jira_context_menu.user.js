@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         Improve JIRA context menu
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  Because context menus should not be skyscrapers
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/jira_context_menu.user.js
 // @match        http*://*/secure/RapidBoard.jspa*
-// @grant        none
+// @grant GM_addStyle
 // ==/UserScript==
+
+GM_addStyle(".ghx-avatar-img { width: 48px !important; height: 48px !important; }")
 
 (function() {
 document.addEventListener("contextmenu", e => {
