@@ -19,7 +19,7 @@ const callback = (mutationsList, observer) => {
     }
 };
 const observer = new MutationObserver(callback);
-observer.observe(document.body, config);
+observer.observe(document.body, {childList: true, subtree: true });
 
 document.addEventListener("contextmenu", e => {
     try{
