@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Improve JIRA context menu
 // @namespace    http://tampermonkey.net/
-// @version      1.6
+// @version      1.61
 // @description  Because context menus should not be skyscrapers
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/jira_context_menu.user.js
@@ -11,6 +11,8 @@
 
 GM_addStyle(".ghx-avatar-img { width: 40px !important; height: 40px !important; }")
 let stopLooking = false;
+
+window.onpopstate = e => stopLooking = false;
 
 const callback = (mutationsList, observer) => {
     for(const mutation of mutationsList) {
