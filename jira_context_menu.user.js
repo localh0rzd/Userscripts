@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Improve JIRA context menu
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  Because context menus should not be skyscrapers
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/jira_context_menu.user.js
@@ -10,11 +10,20 @@
 // ==/UserScript==
 
 GM_addStyle(".ghx-avatar-img { width: 40px !important; height: 40px !important; }")
+let stopLooking = false;
 
 const callback = (mutationsList, observer) => {
     for(const mutation of mutationsList) {
         if (mutation.target.id == 'cp-image-preview') {
             mutation.target.addEventListener("click", e => document.querySelector("button#cp-control-panel-close").click())
+        }
+    }
+
+    if(!stopLooking) {
+        const elements = document.querySelectorAll(".ghx-columns, .ghx-column-headers")
+        if(elements.length > 0) {
+            stopLooking = true
+            elements.forEach(x => x.style.display = "inline-table")
         }
     }
 };
