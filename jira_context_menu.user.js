@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Improve JIRA context menu
 // @namespace    http://tampermonkey.net/
-// @version      1.62
+// @version      1.63
 // @description  Because context menus should not be skyscrapers
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/jira_context_menu.user.js
@@ -10,7 +10,8 @@
 // ==/UserScript==
 
 GM_addStyle(".ghx-avatar-img { width: 40px !important; height: 40px !important; }")
-
+let view = ""
+let overlayInterval;
 const callback = (mutationsList, observer) => {
     for(const mutation of mutationsList) {
         if (mutation.target.id == 'cp-image-preview') {
@@ -37,6 +38,24 @@ document.addEventListener("contextmenu", e => {
         console.warn(error)}
     })
 
-setInterval(()=> {
-    document.querySelectorAll(".ghx-columns, .ghx-column-headers").forEach(x => x.style.display = "inline-table")
-}, 1000)
+setInterval(()=> {if(view != location.href.match(/view=\w+(?!&)/g)[0]) {
+    const elements = document.querySelectorAll(".ghx-columns, .ghx-column-headers, .ghx-zone-row, .ghx-zone-table")
+    if(elements.length > 0) {
+        view = location.href.match(/view=\w+(?!&)/g)[0]
+    }
+    elements.forEach(x => x.style.display = "inline-table")
+}
+}, 10)
+
+window.addEventListener("mousedown", e => {
+    overlayInterval = setInterval(() => {
+        let elem = document.querySelector(".ghx-zone-overlay-table")
+        if(elem) {
+            elem.style.display = "inline-table"
+            console.warn("style set")
+            clearInterval(overlayInterval)
+        }
+    }, 10)
+
+})
+window.addEventListener("mouseup", e => view = "")
