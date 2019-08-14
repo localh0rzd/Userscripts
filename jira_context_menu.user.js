@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Improve JIRA context menu
 // @namespace    http://tampermonkey.net/
-// @version      1.65
+// @version      1.66
 // @description  Because context menus should not be skyscrapers
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/jira_context_menu.user.js
@@ -52,6 +52,7 @@ document.addEventListener("contextmenu", e => {
 window.addEventListener("mousedown", e => {
     mouseDown = true;
     overlayInterval = setInterval(() => {
+        console.warn("overlayInterval")
         let elem = document.querySelector(".ghx-zone-overlay-table")
         if(elem) {
             elem.style.display = "inline-table"
@@ -59,12 +60,17 @@ window.addEventListener("mousedown", e => {
             clearInterval(overlayInterval)
             clearInterval(stylesInterval)
         }
-    }, 0)
+        else if(!e.target.closest(".js-detailview")){
+            // Nothing to do here
+            clearInterval(overlayInterval)
+        }
+    }, 5)
 
 })
 window.addEventListener("mouseup", e => {
     mouseDown = false;
     view = "";
+    clearInterval(overlayInterval)
     stylesInterval = setInterval(setStyles, 50)
 })
 
