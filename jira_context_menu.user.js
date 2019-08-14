@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Improve JIRA context menu
 // @namespace    http://tampermonkey.net/
-// @version      1.64
+// @version      1.65
 // @description  Because context menus should not be skyscrapers
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/jira_context_menu.user.js
@@ -59,7 +59,7 @@ window.addEventListener("mousedown", e => {
             clearInterval(overlayInterval)
             clearInterval(stylesInterval)
         }
-    }, 50)
+    }, 0)
 
 })
 window.addEventListener("mouseup", e => {
