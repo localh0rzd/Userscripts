@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuck Blueant
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  Nobody should be forced to waste his time like this. Refresh on presence page for the script to work.
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/blueant.user.js
@@ -45,12 +45,12 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
-function pickTimes() {
+function pickTimes(halfDay) {
     const arrival = new Date(`1970-01-01T10:00:00`)
     const modifier = new Date(Math.floor(Math.random() * 45) * 60000)
     const toAdd = +new Date() % 2 == 0 ? +modifier : +modifier * -1
     const arrivalFinal = new Date(+arrival + toAdd)
-    const departure = new Date(+arrivalFinal + 30600000)
+    const departure = new Date(+arrivalFinal + (halfDay ? 15300000 : 30600000))
     const departureFinal = new Date(+departure + (getRandomInt(-10, 15) * 60000))
     const workTime = new Date(+departureFinal - +arrivalFinal - 1800000)
 
@@ -121,8 +121,8 @@ function stuff() {
             toInput = iframeDocument.querySelector("input[name=to_time]")
             breakInput = iframeDocument.querySelector("input[name=break]")
             durationInput = iframeDocument.querySelector("input[name=dauer]")
-
-            const times = pickTimes()
+            const isHalfDayOff = /halfDay/gi.test(day.classList.toString());
+            const times = pickTimes(isHalfDayOff)
             fromInput.value = times.arrival
             fromInputValue = times.arrival
             fromInput.focus()
