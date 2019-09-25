@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuck Blueant
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  Nobody should be forced to waste his time like this. Refresh on presence page for the script to work.
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/blueant.user.js
@@ -116,7 +116,7 @@ function stuff() {
             });
             iframeWindow.ajax_showWeekWt(dateData[0], dateData[1], dateData[2])
             iframeWindow.ajax_setDefaultWorktimeStartValue(dateData[3], dateData[4], dateData[5])
-            await wait(500)
+            await wait(800)
             fromInput = iframeDocument.querySelector("input[name=from_time]")
             toInput = iframeDocument.querySelector("input[name=to_time]")
             breakInput = iframeDocument.querySelector("input[name=break]")
@@ -126,28 +126,28 @@ function stuff() {
             fromInput.value = times.arrival
             fromInputValue = times.arrival
             fromInput.focus()
-            await wait(500)
+            await wait(800)
             try {
                 iframeDocument.querySelector("button.ui-datepicker-close").click()
             } catch (e) {}
-            await wait(500)
+            await wait(800)
             toInput.value = times.departure
             toInputValue = times.departure
             toInput.focus()
-            await wait(500)
+            await wait(800)
             try {
                 iframeDocument.querySelector("button.ui-datepicker-close").click()
             } catch (e) {}
-            await wait(500)
+            await wait(800)
 
             breakInput.value = "00:30"
             breakInputValue = "00:30"
             breakInput.focus()
-            await wait(500)
+            await wait(800)
             try {
                 iframeDocument.querySelector("button.ui-datepicker-close").click()
             } catch (e) {}
-            await wait(350)
+            await wait(500)
             //debugger
             fromInput.dispatchEvent(new Event("change"))
             toInput.dispatchEvent(new Event("change"))
@@ -156,7 +156,7 @@ function stuff() {
                 return
             }
             buttons[0].click()
-            await wait(500)
+            await wait(750)
 
             iframeDocument.querySelectorAll("div.listbox-wrapper")[1].click()
             const dropdownElements = iframeDocument.querySelectorAll("li.list-option.active")
@@ -169,7 +169,7 @@ function stuff() {
             }
             buttons[1].click()
 
-            await wait(500)
+            await wait(750)
             fromInputValue = null
             toInputValue = null
             breakInputValue = null
