@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuck Blueant
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Nobody should be forced to waste his time like this. Refresh on presence page for the script to work.
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/blueant.user.js
@@ -13,6 +13,8 @@ let waitForPresencePageTimeout;
 let attempt = 0
 let aborted = false
 let iframeWindow, iframeDocument
+let fromInput, toInput, breakInput, durationInput;
+
 if (window.top === window.self) {
     setTimeout(() => {
         iframeWindow = document.querySelector("iframe").contentWindow
@@ -60,16 +62,10 @@ function pickTimes() {
 }
 
 function stuff() {
-
     const bangnav = document.querySelector("div[data-qs-name='nav'] ul")
     const startButton = document.createElement("button")
     const goToBeginningButton = document.createElement("button")
     const stopButton = document.createElement("button")
-    const fromInput = iframeDocument.querySelector("input[name=from_time]")
-    const toInput = iframeDocument.querySelector("input[name=to_time]")
-    const breakInput = iframeDocument.querySelector("input[name=break]")
-    const durationInput = iframeDocument.querySelector("input[name=dauer]")
-    const buttons = iframeDocument.querySelectorAll("button")
     const eingabeInput = iframeDocument.querySelector("td.eingabe")
     const callback = iframeWindow.ajaxEventCallbackWithWaitLogo
 
@@ -93,13 +89,20 @@ function stuff() {
     goToBeginningButton.innerHTML = "Jump to October 2017"
     stopButton.innerHTML = "HALT STOPP"
 
-    async function processWeek(weekDate) {
+    async function processWeek(weekDate, dateData) {
+        if(aborted) {
+            return
+        }
         if (weekDate) {
             iframeWindow.ajax_showWeekWt(+weekDate, '1', '1337')
             await wait(500)
+        } else if (dateData) {
+            iframeWindow.ajax_showWeekWt(dateData, '1', '1337')
+            await wait(500)
         }
-        const relevantMonthDays = iframeDocument.querySelectorAll("td.cm_day:not(.cm_weekend):not(.cm_outside):not(.genehmigt):not(.cm_weekend_outside):not(.worktimebg)")
+        const relevantMonthDays = iframeDocument.querySelectorAll("td.cm_day:not(.cm_weekend):not(.cm_outside):not(.genehmigt):not(.genehmigtcalendarcurrent):not(.cm_kw_finished):not(.cm_weekend_outside):not(.worktimebg)")
         for (const day of relevantMonthDays) {
+            const buttons = iframeDocument.querySelectorAll("button")
             let link = day.querySelector("a").href
             let dateData = link.match(/'(.*?)'/gi).map(x => x.replace(/'/g, ""))
             if (dateData[0] > +new Date()) {
@@ -113,27 +116,38 @@ function stuff() {
             });
             iframeWindow.ajax_showWeekWt(dateData[0], dateData[1], dateData[2])
             iframeWindow.ajax_setDefaultWorktimeStartValue(dateData[3], dateData[4], dateData[5])
-            await wait(200)
+            await wait(500)
+            fromInput = iframeDocument.querySelector("input[name=from_time]")
+            toInput = iframeDocument.querySelector("input[name=to_time]")
+            breakInput = iframeDocument.querySelector("input[name=break]")
+            durationInput = iframeDocument.querySelector("input[name=dauer]")
+
             const times = pickTimes()
             fromInput.value = times.arrival
             fromInputValue = times.arrival
             fromInput.focus()
-            await wait(200)
-            iframeDocument.querySelector("button.ui-datepicker-close").click()
-            await wait(200)
+            await wait(500)
+            try {
+                iframeDocument.querySelector("button.ui-datepicker-close").click()
+            } catch (e) {}
+            await wait(500)
             toInput.value = times.departure
             toInputValue = times.departure
             toInput.focus()
-            await wait(200)
-            iframeDocument.querySelector("button.ui-datepicker-close").click()
-            await wait(200)
+            await wait(500)
+            try {
+                iframeDocument.querySelector("button.ui-datepicker-close").click()
+            } catch (e) {}
+            await wait(500)
 
             breakInput.value = "00:30"
             breakInputValue = "00:30"
             breakInput.focus()
-            await wait(200)
-            iframeDocument.querySelector("button.ui-datepicker-close").click()
-            await wait(200)
+            await wait(500)
+            try {
+                iframeDocument.querySelector("button.ui-datepicker-close").click()
+            } catch (e) {}
+            await wait(350)
             //debugger
             fromInput.dispatchEvent(new Event("change"))
             toInput.dispatchEvent(new Event("change"))
@@ -160,18 +174,28 @@ function stuff() {
             toInputValue = null
             breakInputValue = null
         }
-
-        const lastYear = weekDate.getFullYear()
-        const lastMonth = weekDate.getMonth() + 1
-        if (+new Date() < +weekDate) {
-            console.info("Won't add attendance for the future, exiting")
-        } else if (lastMonth == 12) {
-            processWeek(new Date(`${+lastYear + 1}-01-01T00:00:00`))
+        iframeDocument.querySelector("td.cm_right_buttons > div > div > a").click()
+        await wait(750)
+        processWeek()
+        /*
+        if (!weekDate || relevantMonthDays.length == 0) {
+            const outsideDays = iframeDocument.querySelectorAll("td.cm_outside  > div:not(.hint) > a, td.cm_weekend_outside > div:not(.hint) > a")
+            const lastOutsideDay = outsideDays[outsideDays.length - 1]
+            let dateData = lastOutsideDay.href.match(/'(.*?)'/gi).map(x => x.replace(/'/g, ""))
+            processWeek(null, dateData[0])
         } else {
-            processWeek(new Date(`${lastYear}-${(+lastMonth + 1).toString().padStart(2, "0")}-01T00:00:00`))
+            const lastYear = weekDate.getFullYear()
+            const lastMonth = weekDate.getMonth() + 1
+            if (+new Date() < +weekDate) {
+                console.info("Won't add attendance for the future, exiting")
+            } else if (lastMonth == 12) {
+                processWeek(new Date(`${+lastYear + 1}-01-01T00:00:00`))
+            } else {
+                processWeek(new Date(`${lastYear}-${(+lastMonth + 1).toString().padStart(2, "0")}-01T00:00:00`))
+            }
 
         }
-        //processWeek(+new Date())
+        */
     }
     startButton.addEventListener("click", e => {
         aborted = false
