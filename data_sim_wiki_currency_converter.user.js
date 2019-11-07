@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        Auto currency converter
 // @namespace   aaaaaaa
-// @include     http://prepaid-data-sim-card.wikia.com/wiki/*
-// @version     4
-// @grant       GM_xmlhttpRequest
-// @connect     www.floatrates.com
+// @include     https://prepaid-data-sim-card.wikia.com/wiki/*
+// @include     https://prepaid-data-sim-card.fandom.com/wiki/*
+// @version     5
+// @grant       GM.xmlHttpRequest
 // @noframes
 // ==/UserScript==
 
@@ -65,9 +65,9 @@ function getConversionCourses() {
             console.error(e);
         }
 
-        GM_xmlhttpRequest({
+        GM.xmlHttpRequest({
             method: 'GET',
-            url: 'http://www.floatrates.com/daily/' + baseCurrency + '.json',
+            url: 'https://www.floatrates.com/daily/' + baseCurrency + '.json',
             onload: function (response) {
                 var courses = JSON.parse(response.responseText);
                 sessionStorage.setItem("_gm_currency_exchange_rates", JSON.stringify({

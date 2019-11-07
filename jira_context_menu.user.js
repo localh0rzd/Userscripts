@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         Improve JIRA context menu
 // @namespace    http://tampermonkey.net/
-// @version      1.66
+// @version      1.72
 // @description  Because context menus should not be skyscrapers
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/jira_context_menu.user.js
 // @match        http*://*/secure/RapidBoard.jspa*
-// @grant GM_addStyle
+// @grant        GM_addStyle
+// @grant        GM_getValue
+// @grant        GM_setValue
 // ==/UserScript==
 
 GM_addStyle(".ghx-avatar-img { width: 40px !important; height: 40px !important; }")
@@ -14,6 +16,7 @@ let view = ""
 let mouseDown = false;
 let overlayInterval;
 let stylesInterval;
+let commentsSaved = GM_getValue(location.origin) || 0
 const setStyles = () => {
     if(!mouseDown) {
         const elements = document.querySelectorAll(".ghx-columns, .ghx-column-headers, .ghx-zone-row, .ghx-zone-table")
@@ -75,3 +78,39 @@ window.addEventListener("mouseup", e => {
 })
 
 stylesInterval = setInterval(setStyles, 50)
+
+
+const originalRenderer = GH.WorkView.renderPoolAndDetailView
+const infoOverlay = document.createElement("div")
+const infoCounter = document.createElement("span")
+infoOverlay.innerHTML = `Bereits vor der Zerstörung bewahrte Kommentare: `
+infoOverlay.style.cssText = "font-size: 50%"
+
+infoOverlay.appendChild(infoCounter)
+
+const setIdleInfoOverlay = () => {
+    infoCounter.innerHTML = `${commentsSaved}`
+    infoCounter.style.cssText = `font-size: 100%;`
+}
+
+GH.WorkView.renderPoolAndDetailView = () => {
+    if(document.querySelector("textarea.wiki-edit-wrapped")) {
+        GM_setValue(location.origin, ++commentsSaved)
+        const goal = document.querySelector("span.subnavigator-title")
+        goal.appendChild(infoOverlay)
+        setIdleInfoOverlay()
+        setTimeout(() => {
+            infoCounter.style.cssText = `transition: 1s; font-size: 300%;`
+            setTimeout(() => {infoCounter.style.cssText = `transition: 1s; font-size: 100%;`}, 3000)
+        }, 0)
+        return
+    } else {
+        originalRenderer.apply(GH.WorkView, ...arguments)
+    }
+    setTimeout(() => {
+        const goal = document.querySelector("span.subnavigator-title")
+        goal.appendChild(infoOverlay)
+        setIdleInfoOverlay()
+    }, 0)
+}
+
