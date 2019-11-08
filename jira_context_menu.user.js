@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Improve JIRA context menu
 // @namespace    http://tampermonkey.net/
-// @version      1.72
+// @version      1.73
 // @description  Because context menus should not be skyscrapers
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/jira_context_menu.user.js
@@ -34,6 +34,8 @@ const callback = (mutationsList, observer) => {
             mutation.target.addEventListener("click", e => document.querySelector("button#cp-control-panel-close").click())
         }
     }
+    setTimeout(() => {document.body.classList.remove("ghx-loading-pool")}, 1000)
+
 };
 const observer = new MutationObserver(callback);
 observer.observe(document.body, {childList: true, subtree: true });
