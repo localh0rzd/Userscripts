@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuck Blueant
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  Nobody should be forced to waste his time like this. Refresh on presence page for the script to work.
 // @author       localh0rzd
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/blueant.user.js
@@ -62,7 +62,7 @@ function pickTimes(halfDay) {
 }
 
 function stuff() {
-    const bangnav = document.querySelector("div[data-qs-name='nav'] ul")
+    const bangnav = document.querySelector("ul.nano-content")//document.querySelector("div[data-qs-name='nav'] ul")
     const startButton = document.createElement("button")
     const goToBeginningButton = document.createElement("button")
     const stopButton = document.createElement("button")
@@ -100,6 +100,7 @@ function stuff() {
             iframeWindow.ajax_showWeekWt(dateData, '1', '1337')
             await wait(500)
         }
+        const DATE_TIME_WAIT = 800
         const relevantMonthDays = iframeDocument.querySelectorAll("td.cm_day:not(.cm_weekend):not(.cm_outside):not(.genehmigt):not(.genehmigtcalendarcurrent):not(.cm_kw_finished):not(.cm_weekend_outside):not(.worktimebg)")
         for (const day of relevantMonthDays) {
             const buttons = iframeDocument.querySelectorAll("button")
@@ -126,42 +127,51 @@ function stuff() {
             fromInput.value = times.arrival
             fromInputValue = times.arrival
             fromInput.focus()
-            await wait(800)
+            await wait(DATE_TIME_WAIT)
             try {
                 iframeDocument.querySelector("button.ui-datepicker-close").click()
             } catch (e) {}
-            await wait(800)
+            await wait(DATE_TIME_WAIT)
             toInput.value = times.departure
             toInputValue = times.departure
             toInput.focus()
-            await wait(800)
+            await wait(DATE_TIME_WAIT)
             try {
                 iframeDocument.querySelector("button.ui-datepicker-close").click()
             } catch (e) {}
-            await wait(800)
+            await wait(DATE_TIME_WAIT)
 
             breakInput.value = "00:30"
             breakInputValue = "00:30"
             breakInput.focus()
-            await wait(800)
+            await wait(DATE_TIME_WAIT)
             try {
                 iframeDocument.querySelector("button.ui-datepicker-close").click()
             } catch (e) {}
-            await wait(500)
+            await wait(DATE_TIME_WAIT)
             //debugger
             fromInput.dispatchEvent(new Event("change"))
             toInput.dispatchEvent(new Event("change"))
             breakInput.dispatchEvent(new Event("change"))
+            await wait(100)
             if (aborted) {
                 return
             }
             buttons[0].click()
             await wait(750)
 
-            iframeDocument.querySelectorAll("div.listbox-wrapper")[1].click()
-            const dropdownElements = iframeDocument.querySelectorAll("li.list-option.active")
-            dropdownElements[dropdownElements.length - 1].click()
-
+            //iframeDocument.querySelectorAll("div.listbox-wrapper")[1].click()
+            iframeDocument.querySelectorAll("#default input.ba.baInput")[1].click()
+            //const dropdownElements = iframeDocument.querySelectorAll("li.list-option.active")
+            //dropdownElements[dropdownElements.length - 1].click()
+            const dropdownList = iframeDocument.querySelectorAll("div[id^=bangListboxgc]")[1]
+            dropdownList.click()
+            await wait(500)
+            const dropdownEntries = iframeDocument.querySelectorAll("li.level-1 > span")
+            const dropdownEntry = dropdownEntries[dropdownEntries.length - 1]
+            dropdownEntry.focus()
+            dropdownEntry.click()
+            await wait(500)
             durationInput.value = times.time
             durationInput.dispatchEvent(new Event("change"))
             if (aborted) {
@@ -169,13 +179,13 @@ function stuff() {
             }
             buttons[1].click()
 
-            await wait(750)
+            await wait(1000)
             fromInputValue = null
             toInputValue = null
             breakInputValue = null
         }
         iframeDocument.querySelector("td.cm_right_buttons > div > div > a").click()
-        await wait(750)
+        await wait(1000)
         processWeek()
         /*
         if (!weekDate || relevantMonthDays.length == 0) {
