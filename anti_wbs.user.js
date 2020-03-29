@@ -6,7 +6,7 @@
 // @include     http*://*immobilienscout24.de/Suche/*
 // @include     http*://*immonet.de/immobiliensuche/*
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/anti_wbs.user.js
-// @version     1.7
+// @version     1.8
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -28,7 +28,6 @@ let badDistricts = ["Adlershof",
     "Marienfelde",
     "Marzahn",
     "Pankow",
-    "Reinickendorf",
     "Rudow",
     "^(?!Spandauer).*Spandau",
     "Tegel",
@@ -38,6 +37,7 @@ let averageDistricts = ["Friedrichshain",
     "Mitte",
     "Neukölln",
     "Prenzlauer Berg",
+    "Reinickendorf",
     "Steglitz",
     "Weißensee",
     "Zehlendorf"];
@@ -63,9 +63,9 @@ function filter(site) {
     }
     for (let a of document.querySelectorAll(query)) {
         try {
-            let addressLine = a.parentNode.querySelector('div.result-list-entry__address > button > div').innerHTML;
-            let rent = a.parentNode.querySelector("div > div.result-list-entry__criteria.margin-bottom-s > div > div.grid.grid-flex.gutter-horizontal-l.gutter-vertical-s > dl:nth-child(1) > dd").innerHTML;
-            let room = a.parentNode.querySelector("div > div.result-list-entry__criteria.margin-bottom-s > div > div.grid.grid-flex.gutter-horizontal-l.gutter-vertical-s > dl:nth-child(2) > dd").innerHTML;
+            let addressLine = a.parentNode.querySelectorAll("button")[1].innerText;
+            let rent = a.parentNode.querySelector("dl:nth-child(1) > dd").innerHTML;
+            let room = a.parentNode.querySelector("dl:nth-child(2) > dd").innerHTML;
 
             rent = Number(rent.replace(/[^0-9,]+/g, "").replace(/,/, "."));
             room = Number(room.replace(/[^0-9,]+/g, "").replace(/,/, "."));
@@ -179,7 +179,7 @@ function addExtraText(elem, text, kind) {
 }
 
 function addExtraGutter(node, cost, caption, kind){
-    let gutter = node.parentNode.querySelector('.result-list-entry__brand-title-container').parentNode.querySelector("div > div.result-list-entry__criteria.margin-bottom-s > div > div.grid.grid-flex.gutter-horizontal-l.gutter-vertical-s");
+    let gutter = node.parentNode.querySelector('.result-list-entry__brand-title-container').parentNode.querySelector("div.grid.grid-flex.gutter-horizontal-l.gutter-vertical-s");
     if (!gutter.querySelector(`.${kind}`)) {
         let tempchild = document.createElement("dl");
         //tempchild.innerHTML = '<dl class="grid-item result-list-entry__primary-criterion " role="presentation"><dd class="font-nowrap font-line-xs">536,54 €</dd><dt class="font-s onlyLarge">Kaltmiete</dt></dl>'
