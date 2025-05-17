@@ -9,7 +9,7 @@
 // @require      https://cdn.jsdelivr.net/npm/rxjs@7.8.0/dist/bundles/rxjs.umd.min.js
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/louis.user.js
 // @downloadURL   https://github.com/localh0rzd/Userscripts/raw/master/louis.user.js
-// @version     1.03
+// @version     1.04
 // @grant        none
 // @run-at      document-idle
 // ==/UserScript==
@@ -44,18 +44,19 @@
                                 switchMap(response => response.text()),
                                 map(page => {
                                     const doc = parser.parseFromString(page, "text/html")
-
+                                    let match;
                                     const regex = /Klasse \w+/gi
-                                    let match = page.match(regex);
-                                    if (!match) {
-                                        match = '&lt;unknown&gt;';
 
-                                        for (let property of [...doc.querySelectorAll('[itemprop="additionalProperty"]')]) {
-                                            if (/Klasse/gi.test(property.querySelector('[itemprop="name"]').innerHTML)) {
-                                                match = `${property.querySelector('[itemprop="name"]').innerHTML.trim()}: ${property.querySelector('[itemprop="value"]').innerHTML.trim()}`
-                                            }
+                                    for (let property of [...doc.querySelectorAll('[itemprop="additionalProperty"]')]) {
+                                        if (/Klasse/gi.test(property.querySelector('[itemprop="name"]').innerHTML)) {
+                                            match = `${property.querySelector('[itemprop="name"]').innerHTML.trim()}: ${property.querySelector('[itemprop="value"]').innerHTML.trim()}`
                                         }
                                     }
+
+                                    if (!match) {
+                                        match = page.match(regex) ?? '&lt;unknown&gt;';
+                                    }
+
                                     localStorage.setItem(artikel, match);
                                     return { product, match };
                                 }),
@@ -79,7 +80,7 @@
                 product.parentElement.parentElement.parentElement.style.opacity = 1;
             })
         ).subscribe();
-    
+
     }
 
     doStuff();
