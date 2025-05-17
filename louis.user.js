@@ -9,7 +9,7 @@
 // @require      https://cdn.jsdelivr.net/npm/rxjs@7.8.0/dist/bundles/rxjs.umd.min.js
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/louis.user.js
 // @downloadURL   https://github.com/localh0rzd/Userscripts/raw/master/louis.user.js
-// @version     1.02
+// @version     1.03
 // @grant        none
 // @run-at      document-idle
 // ==/UserScript==
@@ -69,13 +69,14 @@
                 span.innerHTML = '<br />' + match;
 
                 if (/aaa/gi.test(match)) {
-                    span.style = 'background-color: #ff00ff;'
+                    product.parentElement.parentElement.style = 'background-color: #ff00ff;'
                 }
 
                 if (!product.parentElement.parentElement.querySelector('.security')) {
                     product.parentElement.parentElement.appendChild(span);
-                    span.parentElement.parentElement.style.opacity = 1
                 }
+
+                product.parentElement.parentElement.parentElement.style.opacity = 1;
             })
         ).subscribe();
     
