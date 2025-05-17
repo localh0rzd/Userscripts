@@ -9,7 +9,7 @@
 // @require      https://cdn.jsdelivr.net/npm/rxjs@7.8.0/dist/bundles/rxjs.umd.min.js
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/louis.user.js
 // @downloadURL   https://github.com/localh0rzd/Userscripts/raw/master/louis.user.js
-// @version     1.01
+// @version     1.02
 // @grant        none
 // @run-at      document-idle
 // ==/UserScript==
@@ -27,9 +27,13 @@
 
     const doStuff = () => {
         const products = [...document.querySelectorAll('.product-info__product-name a')];
+        products.forEach(product => {
+            product.parentElement.parentElement.parentElement.style.opacity = 0.25;
+        });
         subscription = rxjs.of(...products).pipe(
             concatMap(product => {
                 const artikel = product.href.match(/\d+$/g).join();
+
                 if (localStorage.getItem(artikel)) {
                     return of({ product, match: localStorage.getItem(artikel) })
                 } else {
@@ -69,7 +73,8 @@
                 }
 
                 if (!product.parentElement.parentElement.querySelector('.security')) {
-                    product.parentElement.parentElement.appendChild(span)
+                    product.parentElement.parentElement.appendChild(span);
+                    span.parentElement.parentElement.style.opacity = 1
                 }
             })
         ).subscribe();
