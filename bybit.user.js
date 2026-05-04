@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
 // @downloadURL   https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
-// @version     1.02
+// @version     1.03
 // @author       You
 // @match        https://www.bybit.com/en/p2p/buy/USDT/RUB
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bybit.com
@@ -19,6 +19,7 @@
 
     const badFlag = [
         /Cпред до 7.2 пpoцeнтов/i,
+		/пaссuвнo/i,
         /Веду до результата/i,
         /Даю рабочую cвязky/i,
         /Выкуплю Ваши USDT/i,
