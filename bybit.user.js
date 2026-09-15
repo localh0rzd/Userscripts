@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @updateURL   https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
 // @downloadURL   https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
-// @version     1.04
+// @version     1.05
 // @author       You
 // @match        https://www.bybit.com/en/p2p/buy/USDT/RUB
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bybit.com
