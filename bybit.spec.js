@@ -117,3 +117,21 @@ for (const [remark, limits, want] of verdictCases) {
         assert.equal(verdict(remark, limits), want);
     });
 }
+
+// ---------- "на всю сумму": the ad's upper limit, without cents ----------
+const wholeCases = [
+    // [remark, limits, expected sums]
+    ['СТРОГО НА ВСЮ СУММУ', [30000, 88268.14], [88268]],
+    ['заходить строго на всю сумму ордера', [5000, 12000], [12000]],
+    ['Вся сумма одним платежом', [10000, 25000.99], [25000]],
+    ['СТРОГО НА ВСЮ СУММУ', null, []],                       // limits unknown
+    ['Всюду сумму не пишу', [5000, 12000], []],
+];
+
+for (const [remark, limits, want] of wholeCases) {
+    test(`whole sum: ${remark}${limits ? ` [${limits.join(' ~ ')}]` : ''}`, () => {
+        const v = classify(remark, limits);
+        assert.deepEqual(v.sums, want);
+        assert.equal(v.outOfRange, false);
+    });
+}

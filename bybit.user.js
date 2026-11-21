@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
 // @downloadURL  https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
-// @version      2.19
+// @version      2.20
 // @author       You
 // @match        https://www.bybit.com/*/p2p*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bybit.com
@@ -211,6 +211,8 @@
         const norm = deDigit(toCyrillic(remark));
         const packed = compact(remark);
         const sums = demandedSums(remark);
+        // "СТРОГО НА ВСЮ СУММУ": the whole ad, i.e. its upper limit (whole rubles)
+        if (limits && /(^|[^а-яё])вс[юея]\s+сумм/i.test(norm) && !sums.includes(Math.floor(limits[1]))) sums.push(Math.floor(limits[1]));
         const outOfRange = !!limits && sums.length > 0 && sums.every(v => v < limits[0] || v > limits[1]);
         const tooSmall = !!limits && limits[1] < MIN_CEILING;
         const bad = outOfRange || tooSmall
