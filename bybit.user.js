@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
 // @downloadURL  https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
-// @version      2.18
+// @version      2.19
 // @author       You
 // @match        https://www.bybit.com/*/p2p*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bybit.com
@@ -20,6 +20,7 @@
     const DEFAULT_PAYMENTS = ['Bank Transfer', 'Mobile Top-up'];
     const DEFAULT_REFRESH = '5'; // seconds, as in the refresh dropdown: '5', '10', '20'
     const HIDE_BAD = true; // false = only tint bad rows red instead of hiding
+    const MIN_CEILING = 5000; // RUB: ads whose upper limit is below this are filtered out
 
     // Each regex is also tested against a copy with Latin look-alikes turned Cyrillic (see toCyrillic),
     // so "Т-БAНК" with a Latin A is caught without separate Latin variants.
@@ -211,7 +212,8 @@
         const packed = compact(remark);
         const sums = demandedSums(remark);
         const outOfRange = !!limits && sums.length > 0 && sums.every(v => v < limits[0] || v > limits[1]);
-        const bad = outOfRange
+        const tooSmall = !!limits && limits[1] < MIN_CEILING;
+        const bad = outOfRange || tooSmall
             || matches(badFlag, remark, norm)
             || badCompact.some(r => r.test(packed))
             || tBankWithoutSber(remark, norm, packed);

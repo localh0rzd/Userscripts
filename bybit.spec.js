@@ -2,7 +2,7 @@
 // No dependencies: uses Node's built-in test runner.
 //
 // The userscript isn't a module, so this loads its two pure sections by their section markers
-// (the regex lists, and "filtering" through the "verdict" block) and runs them in isolation.
+// (config + the regex lists, and "filtering" through the "verdict" block) and runs them in isolation.
 // If you rename a "// ---------- … ----------" marker, update the slices below.
 
 const { test } = require('node:test');
@@ -17,7 +17,7 @@ const between = (from, to) => {
     return src.slice(i, j);
 };
 const { classify, demandedSums } = new Function(
-    between('    const badFlag = [', '    // ---------- default currency') +
+    between('    // ---------- config ----------', '    // ---------- default currency') +
     between('    // ---------- filtering ----------', '    // ---------- rendering ----------') +
     '\nreturn { classify, demandedSums };',
 )();
@@ -105,6 +105,11 @@ const verdictCases = [
     ['Заходить Строго на суммы кратные 1000₽', [10000, 30000], 'neutral'],
     ['писать сюда:@Tether717', [10000, 14876.56], 'neutral'],
     ['Перевод со СБЕР, заходить на 99000', [1000, 50000], 'bad'],      // out of range beats good
+    // upper limit below MIN_CEILING (5000 RUB)
+    ['Перевод со СБЕР', [500, 4999.99], 'bad'],
+    ['Перевод со СБЕР', [500, 5000], 'good'],                          // exactly 5000 is kept
+    ['', [1000, 2095], 'bad'],                                         // no remark at all
+    ['', [1000, 300000], 'neutral'],
 ];
 
 for (const [remark, limits, want] of verdictCases) {
