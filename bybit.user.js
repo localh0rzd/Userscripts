@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
 // @downloadURL  https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
-// @version      2.24
+// @version      2.25
 // @author       You
 // @match        https://www.bybit.com/*/p2p*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bybit.com
@@ -180,10 +180,10 @@
     // "ЗАХОДИТЬ СТРОГО на 65к", "Приму 57 350", "СТРОГО НА СУММУ(Ы)❗️ 49110₽", "ЗАХОДИТЕ СТРОГО 96.000₽"
     // A trigger word, then up to 45 chars without digits, then a number (or a list "20 000 / 30 000").
     // List items may carry a currency or a note: "10000р, 15000р", "1413 (СБП), 3087 (СБП)".
-    const SUM_ITEM = String.raw`\d(?:[\d\s.,]*\d)?(?:\s?(?:к|k|тыс\S*))?`;
+    const SUM_ITEM = String.raw`\d(?:[\d\s.,]*\d)?(?:\s?(?:к|k|тыс\S*)|т(?![а-яёa-z]|[\s.-]*банк))?`; // "55т" = 55 000 (not "5000 т-банк")
     const SUM_SEP = String.raw`\s*(?:р\.?|руб\S*|₽|rub)?\s*(?:\([^)\d]{0,15}\))?\s*(?:,|\/|;|или|и)\s*`;
     const SUM_TRIGGER = new RegExp(String.raw`(заход[^\s\d]*|строго|сумм[аыуеой][^\s\d]*|приму|только\s+на)([^\d+]{0,45}?)(${SUM_ITEM}(?:${SUM_SEP}${SUM_ITEM})*)`, 'gi');
-    const NUM = /(\d{1,3}(?:[\s.,]\d{3})+|\d+)(?:[.,]\d{1,2}(?!\d))?(\s?(?:к|k|тыс)(?![а-яёa-z]))?/gi;
+    const NUM = /(\d{1,3}(?:[\s.,]\d{3})+|\d+)(?:[.,]\d{1,2}(?!\d))?((?:\s?(?:к|k|тыс)|т(?![\s.-]*банк))(?![а-яёa-z]))?/gi;
     function demandedSums(text) {
         const s = text.replace(/[\u00a0\u202f]/g, ' ');
         const out = [];
