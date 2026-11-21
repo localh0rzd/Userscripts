@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
 // @downloadURL  https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
-// @version      2.14
+// @version      2.17
 // @author       You
 // @match        https://www.bybit.com/*/p2p*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bybit.com
@@ -24,6 +24,7 @@
     // Each regex is also tested against a copy with Latin look-alikes turned Cyrillic (see toCyrillic),
     // so "Т-БAНК" with a Latin A is caught without separate Latin variants.
     const badFlag = [
+        /Перевод\s+зарубеж/i,                                              // "Перевод зарубеж" / "Перевод зарубежный"
         // Tinkoff / T-Bank mentioned anywhere. Same as your old catch-all
         // (its "только/строго ... с" prefix was fully optional), widened to "тиньк…".
         /тиньк|тинкофф?|tinkoff|[tт]-банк|\bt[\s.—–-]*bank/i,
@@ -72,6 +73,7 @@
     ];
     const compact = s => toCyrillic(
         s.replace(/🅱️?/gu, 'b')                 // "Т 🅱️ANKA"
+         .replace(/(?<=[а-яёa-z])@(?=[а-яёa-z])/gi, 'а') // "Тб@нк"
          .toLowerCase()
          .replace(/[^a-zа-яё]/g, '')                    // keep letters only
          .replace(/b[aа][nн][kк]/g, 'банк')            // Latin/mixed "bank" spelled out → банк
@@ -108,6 +110,7 @@
     const goodFlag = [
         /(Перевод|только) (со )?СБЕР/i,
         /принима\S*\s+(оплату\s+)?(с|из|со)\s+сбер/i,                      // "Принимаю оплату из С6ер6анка" (digits normalized)
+        /(^|[^а-яёa-z])с\s+любого\s+банка/i,                               // "С ЛЮБОГО БАНКА"
     ];
 
     // ---------- default currency (on full page loads only; switching inside the page still works) ----------
@@ -164,13 +167,63 @@
                          a:'а', c:'с', e:'е', o:'о', p:'р', x:'х', y:'у', k:'к', m:'м', u:'и', n:'п' };
     const toCyrillic = s => s.replace(/[ABCEHKMOPTXYacepoxykmun]/g, ch => LOOKALIKES[ch]);
     // Digits used as letters inside words: "С6ер6анк" → "Сбербанк", "т0лько" → "только". Prices are untouched.
-    const deDigit = s => s.replace(/(?<=[а-яёa-z])[60]|[60](?=[а-яёa-z])/gi, d => (d === '6' ? 'б' : 'о'));
+    // "@" between letters is an "а": "Тб@нк" → "Тбанк" (a "@username" isn't preceded by a letter).
+    const deDigit = s => s
+        .replace(/(?<=[а-яёa-z])[60]|[60](?=[а-яёa-z])/gi, d => (d === '6' ? 'б' : 'о'))
+        .replace(/(?<=[а-яёa-z])@(?=[а-яёa-z])/gi, 'а');
     const matches = (list, text, norm) => list.some(r => r.test(text) || r.test(norm));
+
+    // ---------- exact sum demanded in the remark ----------
+    // "ЗАХОДИТЬ СТРОГО на 65к", "Приму 57 350", "СТРОГО НА СУММУ(Ы)❗️ 49110₽", "ЗАХОДИТЕ СТРОГО 96.000₽"
+    // A trigger word, then up to 45 chars without digits, then a number (or a list "20 000 / 30 000").
+    // List items may carry a currency or a note: "10000р, 15000р", "1413 (СБП), 3087 (СБП)".
+    const SUM_ITEM = String.raw`\d[\d\s.,]*(?:\s?(?:к|k|тыс\S*))?`;
+    const SUM_SEP = String.raw`\s*(?:р\.?|руб\S*|₽|rub)?\s*(?:\([^)\d]{0,15}\))?\s*(?:,|\/|;|или|и)\s*`;
+    const SUM_TRIGGER = new RegExp(String.raw`(заход[^\s\d]*|строго|сумм[аыуеой][^\s\d]*|приму|только\s+на)([^\d+]{0,45}?)(${SUM_ITEM}(?:${SUM_SEP}${SUM_ITEM})*)`, 'gi');
+    const NUM = /(\d{1,3}(?:[\s.,]\d{3})+|\d+)(?:[.,]\d{1,2}(?!\d))?(\s?(?:к|k|тыс)(?![а-яёa-z]))?/gi;
+    function demandedSums(text) {
+        const s = text.replace(/[\u00a0\u202f]/g, ' ');
+        const out = [];
+        for (const m of s.matchAll(SUM_TRIGGER)) {
+            const filler = m[2], after = s.slice(m.index + m[0].length);
+            // "от 3000", "до 23:00", "не более 50000": a limit or a time, not an exact sum
+            // (emoji/punctuation allowed in between: "строго от ❗3000❗")
+            if (/(^|[^а-яё])(от|до|более|менее|макс\S*|мин\S*|лимит\S*|в)[^а-яёa-z0-9]*$/i.test(filler)) continue;
+            if (/[а-яёa-z@_]$/i.test(filler)) continue; // part of a word or handle: "сюда:@Tether717\"
+            // "суммы кратные 1000", "кратные суммы 1000": multiples, not a sum
+            if (/кратн/i.test(filler) || /кратн\S*\s*$/i.test(s.slice(Math.max(0, m.index - 20), m.index))) continue;
+            if (/^\s*(:\d|[-–—~]\s*\d|до\s*\d|usdt|\$|€|eur|руб\S*\s+до|мин|час|%|лиц|перевод|раз)/i.test(after)) continue;
+            for (const n of m[3].matchAll(NUM)) {
+                if (/^\s*[-–—~]\s*\d/.test(s.slice(m.index + m[1].length + m[2].length + n.index + n[0].length))) break; // range "3 000 - 5 000"
+                let v = parseInt(n[1].replace(/[\s.,]/g, ''), 10);
+                if (n[2]) v *= 1000;
+                if (v >= 100 && v <= 10_000_000) out.push(v);
+            }
+        }
+        return [...new Set(out)];
+    }
+
+    // ---------- verdict for one ad (pure: bybit.spec.js tests this) ----------
+    // limits: [min, max] in RUB as shown in the row, or null if unknown.
+    function classify(remark, limits) {
+        const norm = deDigit(toCyrillic(remark));
+        const packed = compact(remark);
+        const sums = demandedSums(remark);
+        const outOfRange = !!limits && sums.length > 0 && sums.every(v => v < limits[0] || v > limits[1]);
+        const bad = outOfRange
+            || matches(badFlag, remark, norm)
+            || badCompact.some(r => r.test(packed))
+            || tBankWithoutSber(remark, norm, packed);
+        const good = !bad && matches(goodFlag, remark, norm);
+        return { bad, good, sums, outOfRange };
+    }
 
     // ---------- rendering ----------
     const CSS = `
         .uf-remark { display:block; margin-top:6px; max-width:420px; white-space:pre-wrap;
                      font-size:12px; line-height:1.35; opacity:.85; }
+        .uf-sum    { display:block; margin-top:2px; font-size:22px; line-height:28px; font-weight:600; color:#20b26c; } /* same size as the rate (.price-amount) */
+        .uf-sum.uf-out { color:#f6465d; }
         #uf-badge  { position:fixed; right:12px; bottom:12px; z-index:99999; padding:6px 10px;
                      border-radius:6px; background:#222; color:#fff; font:12px sans-serif;
                      cursor:pointer; opacity:.85; }
@@ -216,6 +269,31 @@
         if (tr.style.display !== display) tr.style.display = display;
     }
 
+    // The ad's limits as shown in the row: "30,000.00 ~ 88,268.14 RUB".
+    function rowLimits(tr) {
+        for (const td of [...tr.children].slice(2)) {
+            const m = td.textContent.match(/([\d,]+(?:\.\d+)?)\s*~\s*([\d,]+(?:\.\d+)?)/);
+            if (m) return [m[1], m[2]].map(x => parseFloat(x.replace(/,/g, '')));
+        }
+        return null;
+    }
+
+    // Shows the demanded sum(s) under the price, red when none of them fits the ad's limits.
+    function showSums(tr, sums, out, lim) {
+        const priceTd = tr.children[1];
+        let el = priceTd.querySelector('.uf-sum');
+        if (!sums.length) { el?.remove(); return; }
+        if (!el) {
+            el = document.createElement('span');
+            priceTd.appendChild(el);
+        }
+        const text = '= ' + sums.map(v => v.toLocaleString('ru-RU')).join(' / ') + ' ₽';
+        const cls = 'uf-sum' + (out ? ' uf-out' : '');
+        if (el.textContent !== text) el.textContent = text;
+        if (el.className !== cls) el.className = cls;
+        el.title = out ? `Outside the ad's limits ${lim[0]} ~ ${lim[1]}` : 'Exact sum demanded in the remark';
+    }
+
     function render() {
         ensureStyle();
         let hidden = 0;
@@ -225,7 +303,7 @@
             const remark = k ? remarks.get(k) : null;
             let el = tr.querySelector('.uf-remark');
 
-            if (remark == null) { el?.remove(); paint(tr, false, false); continue; }
+            if (remark == null) { el?.remove(); tr.querySelector('.uf-sum')?.remove(); paint(tr, false, false); continue; }
             if (!el) {
                 el = document.createElement('span');
                 el.className = 'uf-remark';
@@ -233,12 +311,9 @@
             }
             if (el.textContent !== remark) el.textContent = remark; // textContent: never inject seller HTML
 
-            const norm = deDigit(toCyrillic(remark));
-            const packed = compact(remark);
-            const bad = matches(badFlag, remark, norm)
-                || badCompact.some(r => r.test(packed))
-                || tBankWithoutSber(remark, norm, packed);
-            const good = !bad && matches(goodFlag, remark, norm);
+            const lim = rowLimits(tr);
+            const { bad, good, sums, outOfRange } = classify(remark, lim);
+            showSums(tr, sums, outOfRange, lim);
             paint(tr, bad, good);
             if (bad && HIDE_BAD) hidden++;
         }
