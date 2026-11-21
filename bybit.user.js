@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
 // @downloadURL  https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
-// @version      2.20
+// @version      2.22
 // @author       You
 // @match        https://www.bybit.com/*/p2p*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bybit.com
@@ -25,7 +25,8 @@
     // Each regex is also tested against a copy with Latin look-alikes turned Cyrillic (see toCyrillic),
     // so "Т-БAНК" with a Latin A is caught without separate Latin variants.
     const badFlag = [
-        /Перевод\s+зарубеж/i,                                              // "Перевод зарубеж" / "Перевод зарубежный"
+        /(?<!из[\s-]?)за\s*рубеж/i,                                         // "Перевод (будет) зарубеж", "переводы за рубеж" (not "из-за рубежа")
+        /таджик|узбек|казах|к[ыи]рг[иы]з|туркмен/i,                            // the ex-USSR "-stan" countries
         // Tinkoff / T-Bank mentioned anywhere. Same as your old catch-all
         // (its "только/строго ... с" prefix was fully optional), widened to "тиньк…" and a cut-off "ТИНЬ"
         // ("чек от официальной почты ТИНЬ").
@@ -196,9 +197,14 @@
             if (/кратн/i.test(filler) || /кратн\S*\s*$/i.test(s.slice(Math.max(0, m.index - 20), m.index))) continue;
             if (/^\s*(:\d|[-–—~]\s*\d|до\s*\d|usdt|\$|€|eur|руб\S*\s+до|мин|час|%|лиц|перевод|раз)/i.test(after)) continue;
             for (const n of m[3].matchAll(NUM)) {
-                if (/^\s*[-–—~]\s*\d/.test(s.slice(m.index + m[1].length + m[2].length + n.index + n[0].length))) break; // range "3 000 - 5 000"
+                const rest = s.slice(m.index + m[1].length + m[2].length + n.index + n[0].length);
+                if (/^\s*[-–—~]\s*\d/.test(rest)) break; // range "3 000 - 5 000"
                 let v = parseInt(n[1].replace(/[\s.,]/g, ''), 10);
                 if (n[2]) v *= 1000;
+                // bare two-digit number = thousands: "ЗАХОДИТЬ НА 55 и 23" → 55 000, 23 000
+                // (only right after the trigger; not "на 15 минут", "55р", "55.50", "работаю 24/7")
+                else if (v >= 10 && v <= 99 && /^\d+$/.test(n[0]) && filler.length <= 20
+                    && !/^\s*(?!(и|или)(?![а-яёa-z]))[а-яёa-z₽]/i.test(rest) && !/^24\/7/.test(n[0] + rest)) v *= 1000;
                 if (v >= 100 && v <= 10_000_000) out.push(v);
             }
         }
