@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
 // @downloadURL  https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
-// @version      2.17
+// @version      2.18
 // @author       You
 // @match        https://www.bybit.com/*/p2p*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bybit.com
@@ -26,8 +26,9 @@
     const badFlag = [
         /Перевод\s+зарубеж/i,                                              // "Перевод зарубеж" / "Перевод зарубежный"
         // Tinkoff / T-Bank mentioned anywhere. Same as your old catch-all
-        // (its "только/строго ... с" prefix was fully optional), widened to "тиньк…".
-        /тиньк|тинкофф?|tinkoff|[tт]-банк|\bt[\s.—–-]*bank/i,
+        // (its "только/строго ... с" prefix was fully optional), widened to "тиньк…" and a cut-off "ТИНЬ"
+        // ("чек от официальной почты ТИНЬ").
+        /тиньк|(^|[^а-яё])тинь|тинкофф?|tinkoff|[tт]-банк|\bt[\s.—–-]*bank/i,
         // "только/строго/исключительно (с) Т банк", "ТБАНК", «Т-Банк», extra spaces
         /(только|исключительно|строго)\s*(с\s*)?["«]?[tт](?:[\s-]*|.)банк/i,
         // "с Т банка", "с Т-Банка", "С ТБАНКа"

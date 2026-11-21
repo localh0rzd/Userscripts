@@ -88,6 +88,8 @@ const verdictCases = [
     ['перевод  зарубежный', null, 'bad'],
     ['Оплата с Тб@нк с официальным чеком от банка на почту', null, 'bad'],
     ['Оплата с Т-б@нка', null, 'bad'],
+    ['Чек на почту от официальной почты ТИНЬ', null, 'bad'],
+    ['Только тинь', null, 'bad'],
     ['С ЛЮБОГО БАНКА, кроме Тб@нк', null, 'bad'],
     ['пишите @castopnik', null, 'neutral'],
     // demanded sum vs the ad's limits
