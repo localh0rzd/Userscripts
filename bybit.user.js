@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
 // @downloadURL  https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
-// @version      2.23
+// @version      2.24
 // @author       You
 // @match        https://www.bybit.com/*/p2p*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bybit.com
@@ -217,9 +217,15 @@
         const norm = deDigit(toCyrillic(remark));
         const packed = compact(remark);
         const sums = demandedSums(remark);
-        // "СТРОГО НА ВСЮ СУММУ": the whole ad, i.e. its upper limit (whole rubles)
-        if (limits && /(^|[^а-яё])вс[юея]\s+сумм/i.test(norm) && !sums.includes(Math.floor(limits[1]))) sums.push(Math.floor(limits[1]));
         const outOfRange = !!limits && sums.length > 0 && sums.every(v => v < limits[0] || v > limits[1]);
+        // The ad's upper limit (whole rubles) is the sum too when the remark says "НА ВСЮ СУММУ",
+        // or when the range is a fixed sum / narrower than 1000 ₽ ("32,735.00 ~ 32,735.00") and the remark names none.
+        if (limits) {
+            const ceil = Math.floor(limits[1]);
+            const whole = /(^|[^а-яё])вс[юея]\s+сумм/i.test(norm);
+            const narrow = !sums.length && limits[1] - limits[0] < 1000;
+            if ((whole || narrow) && !sums.includes(ceil)) sums.push(ceil);
+        }
         const tooSmall = !!limits && limits[1] < MIN_CEILING;
         const bad = outOfRange || tooSmall
             || matches(badFlag, remark, norm)
@@ -302,7 +308,7 @@
         const cls = 'uf-sum' + (out ? ' uf-out' : '');
         if (el.textContent !== text) el.textContent = text;
         if (el.className !== cls) el.className = cls;
-        el.title = out ? `Outside the ad's limits ${lim[0]} ~ ${lim[1]}` : 'Exact sum demanded in the remark';
+        el.title = out ? `Outside the ad's limits ${lim[0]} ~ ${lim[1]}` : "Exact sum to pay (from the remark or the ad's limits)";
     }
 
     function render() {

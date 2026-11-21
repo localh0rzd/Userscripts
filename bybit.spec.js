@@ -151,6 +151,12 @@ const wholeCases = [
     ['Вся сумма одним платежом', [10000, 25000.99], [25000]],
     ['СТРОГО НА ВСЮ СУММУ', null, []],                       // limits unknown
     ['Всюду сумму не пишу', [5000, 12000], []],
+    // a fixed sum or a range narrower than 1000 ₽: its upper limit
+    ['', [32735, 32735], [32735]],
+    ['Перевод со СБЕР', [32000, 32735.5], [32735]],
+    ['Перевод со СБЕР', [31735, 32735], []],                  // exactly 1000 wide: a real range
+    ['Перевод со СБЕР', [10000, 50000], []],
+    ['Приму 32 200', [32000, 32735], [32200]],                // the remark's own sum wins
 ];
 
 for (const [remark, limits, want] of wholeCases) {
