@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @updateURL    https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
 // @downloadURL  https://github.com/localh0rzd/Userscripts/raw/master/bybit.user.js
-// @version      2.25
+// @version      2.26
 // @author       You
 // @match        https://www.bybit.com/*/p2p*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bybit.com
@@ -50,7 +50,7 @@
         // "yellow bank" = T-Bank: "с жёлтого (т) банка"
         /ж[её]лт(ого|ый|ом)\s*(\(т\)\s*)?банк/i,
         // Refuses Sber
-        /сбербанка? не принимаю|не принимаю платежи от сбербанка|со сбера(, втб, альфа)? не принимаю|кроме сбер|платежи от сбербанка,.*не принимаю/i,
+        /сбербанка? не принимаю|не принимаю платежи от сбербанка|со сбера(, втб, альфа)? не принимаю|кроме[^.!\n]{0,25}(сбер|зел[её]н)|платежи от сбербанка,.*не принимаю/i,
         /международный перевод/i,
         // "scheme" / easy-money spam: "Не Открывай Ордер! Дам свежую схему на +8% за пол часа … @castopnik"
         /(дам|даю|скину|покажу|научу|подскажу|расскажу)\s+(\S+\s+){0,3}(схем|связк|тем[уы])/i,
